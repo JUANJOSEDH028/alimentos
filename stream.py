@@ -14,7 +14,7 @@ data = pd.read_excel(file_path)
 def autenticar_google_drive(usuario):
     credenciales_usuario = f"mycreds_{usuario}.txt"
 
-    # Crear un archivo temporal de client_secrets.json
+    # Crear un archivo temporal de client_secrets.json desde st.secrets
     with open("client_secrets.json", "w") as f:
         json.dump({
             "web": {
