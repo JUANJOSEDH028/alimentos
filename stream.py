@@ -9,11 +9,15 @@ import os
 file_path = "alimentos_limpios.xlsx"
 data = pd.read_excel(file_path)
 
-# Autenticación con Google Drive
+#google autenticator
+
 def autenticar_google_drive(usuario):
     credenciales_usuario = f"mycreds_{usuario}.txt"
 
-    # Configurar credenciales desde secrets.toml o Streamlit Cloud
+    # Validar que st.secrets contiene los datos necesarios
+    if "client_secrets" not in st.secrets or "web" not in st.secrets["client_secrets"]:
+        raise ValueError("La configuración de client_secrets no está completa en secrets.toml o Streamlit Cloud.")
+
     client_secrets = {
         "web": {
             "client_id": st.secrets["client_secrets"]["web"]["client_id"],
@@ -36,6 +40,7 @@ def autenticar_google_drive(usuario):
         gauth.LoadCredentialsFile(credenciales_usuario)
 
     return GoogleDrive(gauth)
+
 
 # Subir archivo de un usuario específico
 def subir_a_google_drive_usuario(usuario):
