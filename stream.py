@@ -4,6 +4,7 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from datetime import datetime
 import os
+import json
 
 # Ruta del archivo de alimentos
 file_path = "alimentos_limpios.xlsx"
@@ -13,27 +14,30 @@ data = pd.read_excel(file_path)
 def autenticar_google_drive(usuario):
     credenciales_usuario = f"mycreds_{usuario}.txt"
 
-    # Configurar credenciales desde secrets.toml o Streamlit Cloud
-    client_secrets = {
-        "web": {
-            "client_id": st.secrets["client_secrets"]["web"]["client_id"],
-            "client_secret": st.secrets["client_secrets"]["web"]["client_secret"],
-            "auth_uri": st.secrets["client_secrets"]["web"]["auth_uri"],
-            "token_uri": st.secrets["client_secrets"]["web"]["token_uri"],
-            "auth_provider_x509_cert_url": st.secrets["client_secrets"]["web"]["auth_provider_x509_cert_url"],
-            "redirect_uris": st.secrets["client_secrets"]["web"]["redirect_uris"]
-        }
-    }
+    # Crear un archivo temporal de client_secrets.json
+    with open("client_secrets.json", "w") as f:
+        json.dump({
+            "web": {
+                "client_id": st.secrets["client_secrets"]["web"]["client_id"],
+                "client_secret": st.secrets["client_secrets"]["web"]["client_secret"],
+                "auth_uri": st.secrets["client_secrets"]["web"]["auth_uri"],
+                "token_uri": st.secrets["client_secrets"]["web"]["token_uri"],
+                "auth_provider_x509_cert_url": st.secrets["client_secrets"]["web"]["auth_provider_x509_cert_url"],
+                "redirect_uris": st.secrets["client_secrets"]["web"]["redirect_uris"]
+            }
+        }, f)
 
     if not os.path.exists(credenciales_usuario):
         gauth = GoogleAuth()
-        gauth.settings["client_config_backend"] = "settings"
-        gauth.settings["client_config"] = client_secrets
+        gauth.LoadClientConfigFile("client_secrets.json")
         gauth.LocalWebserverAuth()
         gauth.SaveCredentialsFile(credenciales_usuario)
     else:
         gauth = GoogleAuth()
         gauth.LoadCredentialsFile(credenciales_usuario)
+
+    # Eliminar el archivo temporal
+    os.remove("client_secrets.json")
 
     return GoogleDrive(gauth)
 
